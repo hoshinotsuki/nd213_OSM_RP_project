@@ -5,6 +5,11 @@
 #include <string>
 #include <cstddef>
 
+/*
+    the class stores all of the OSM data that is read.
+    it provides structs for all of the objects which you might
+    find in the OSM data
+*/
 class Model
 {
 public:
@@ -48,6 +53,9 @@ public:
     
     auto MetricScale() const noexcept { return m_MetricScale; }    
     
+    /*
+    getter functions, which return the vector of nodes, ways, roads .. that are stored in the model.
+    */
     auto &Nodes() const noexcept { return m_Nodes; }
     auto &Ways() const noexcept { return m_Ways; }
     auto &Roads() const noexcept { return m_Roads; }
@@ -58,8 +66,11 @@ public:
     auto &Railways() const noexcept { return m_Railways; }
     
 private:
+    // adjusts the OSM node coordinates as they read into the model
     void AdjustCoordinates();
+    // building objects in the OSM model
     void BuildRings( Multipolygon &mp );
+    // parsing the XML data, storing all the data in each one of these vectors
     void LoadData(const std::vector<std::byte> &xml);
     
     std::vector<Node> m_Nodes;
@@ -75,5 +86,6 @@ private:
     double m_MaxLat = 0.;
     double m_MinLon = 0.;
     double m_MaxLon = 0.;
+    // convert the scale of the model to real-life meters
     double m_MetricScale = 1.f;
 };
