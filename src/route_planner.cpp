@@ -54,15 +54,40 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
 }
 
 
+
+//Compare the F values of two nodes in the open_list[vector<node*> neighbors]
+bool Compare(const RouteModel::Node* a, const RouteModel::Node* b) {
+  auto f1 = a->g_value + a->h_value;
+  auto f2 = b->g_value + b->h_value;
+  // Sort the open_list in descending order. 
+  return f1 > f2; 
+}
+
+
+
+// only pointer can be iterative : pass by open_list as a pointer to [vector<node*>neighbors] 
+void CellSort(std::vector<RouteModel::Node*> * open_list) {
+    // use pointer to iterate [vector<node*>neighbors].
+  std::sort(open_list->begin(), open_list->end(), Compare);
+}
+
+
 // TODO 5: Complete the NextNode method to sort the open list and return the next node.
-// Tips:
-// - Sort the open_list according to the sum of the h value and g value.
-// - Create a pointer to the node in the list with the lowest sum.
-// - Remove that node from the open_list.
-// - Return the pointer.
+RouteModel::Node *RoutePlanner::NextNode(RouteModel::Node *current_node) {
+    // store the pointer to the neighbors of the nurrent_node in open_list.
+    auto open_list = &(*current_node).neighbors;
 
-RouteModel::Node *RoutePlanner::NextNode() {
+    // Sort the open_list according to the sum of the h value and g value.
+    CellSort(open_list);
+    
+    // Create a pointer to the node in the list with the lowest sum.
+    auto node_p = (*open_list).back();
 
+    // Remove that node from the open_list.
+    (*open_list).pop_back();
+
+    // Return the pointer.
+    return node_p;
 }
 
 
