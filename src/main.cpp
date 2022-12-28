@@ -12,19 +12,33 @@ using namespace std::experimental;
 
 static std::optional<std::vector<std::byte>> ReadFile(const std::string &path)
 {   
+    /* binary : we'll be reading the data as the binary data,
+    and not converting to any other data type like string.
+    ate: at the end, i.e. it will immediately seek to the end of the InputStream */
     std::ifstream is{path, std::ios::binary | std::ios::ate};
+    
     if( !is )
         return std::nullopt;
     
+    // tellg: determine the size of the input stream 
     auto size = is.tellg();
+    // initialize the vector of bytes with size 
     std::vector<std::byte> contents(size);    
     
+    // seek back to the beginning of the input stream
     is.seekg(0);
+    // read all of the input stream into the contents vector
     is.read((char*)contents.data(), size);
 
     if( contents.empty() )
         return std::nullopt;
-    return std::move(contents);
+    /* 
+        when we're done, we will return the contents vector 
+        using the standard move of contents.
+        move: allows you to transfer the contents of this vector to another variable
+        without using pointers or references.
+    */
+    return std::move(contents); 
 }
 
 int main(int argc, const char **argv)
@@ -32,12 +46,15 @@ int main(int argc, const char **argv)
     std::string osm_data_file = "";
     if( argc > 1 ) {
         for( int i = 1; i < argc; ++i )
+        // parse command-line arguments.
+        // "-f": allows you to specify the osm datafile that you want to use
             if( std::string_view{argv[i]} == "-f" && ++i < argc )
                 osm_data_file = argv[i];
     }
     else {
         std::cout << "To specify a map file use the following format: " << std::endl;
         std::cout << "Usage: [executable] [-f filename.osm]" << std::endl;
+        // default osm datafile
         osm_data_file = "../map.osm";
     }
     
@@ -45,6 +62,7 @@ int main(int argc, const char **argv)
  
     if( osm_data.empty() && !osm_data_file.empty() ) {
         std::cout << "Reading OpenStreetMap data from the following file: " <<  osm_data_file << std::endl;
+        // ReadFile : read contents of the osm datafile into the vector osmdata
         auto data = ReadFile(osm_data_file);
         if( !data )
             std::cout << "Failed to read." << std::endl;
@@ -60,7 +78,9 @@ int main(int argc, const char **argv)
     RouteModel model{osm_data};
 
     // Create RoutePlanner object and perform A* search.
+    // {model, x1, y1, x2, y2}  x1, y1 -> starting
     RoutePlanner route_planner{model, 10, 10, 90, 90};
+    // records the results in the route planner object
     route_planner.AStarSearch();
 
     std::cout << "Distance: " << route_planner.GetDistance() << " meters. \n";
@@ -68,6 +88,7 @@ int main(int argc, const char **argv)
     // Render results of search.
     Render render{model};
 
+    // IO2D to display the results
     auto display = io2d::output_surface{400, 400, io2d::format::argb32, io2d::scaling::none, io2d::refresh_style::fixed, 30};
     display.size_change_callback([](io2d::output_surface& surface){
         surface.dimensions(surface.display_dimensions());
