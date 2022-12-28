@@ -15,9 +15,8 @@ RouteModel::RouteModel(const std::vector<std::byte> &xml) : Model(xml) {
             store those RouteModel nodes, created by the ModelNode, in the m-Nodes vector.
             counter: used as the index is passed in.
             this: a pointer to the current RouteModel being passed in.
-            emplace_back: like push_back, except explace_back returns a reference to
-                             the object that has just been pushed on to the spectrum.
-                            push_back: create a temporary copy
+            emplace_back: create a reference to the object that has just been pushed on to the spectrum.
+            push_back: create a temporary copy
         */
         m_Nodes.emplace_back(Node(counter, this, node));
         counter++;

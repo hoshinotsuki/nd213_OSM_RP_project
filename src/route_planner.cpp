@@ -98,7 +98,7 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
     }
     //put the start_node into the path
     path_found.push_back(*start_node);
-    
+
     // The returned vector should be in the correct order: the start node should be the first element of the vector, the end node should be the last element.
     // reverse a vector use std::reverse.
     std::reverse(path_found.begin(), path_found.end());
@@ -109,16 +109,32 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
 }
 
 
-// TODO 7: Write the A* Search algorithm here.
-// Tips:
-// - Use the AddNeighbors method to add all of the neighbors of the current node to the open_list.
-// - Use the NextNode() method to sort the open_list and return the next node.
-// - When the search has reached the end_node, use the ConstructFinalPath method to return the final path that was found.
-// - Store the final path in the m_Model.path attribute before the method exits. This path will then be displayed on the map tile.
-
+// TODO 7: Write the A* Search algorithm here. 
 void RoutePlanner::AStarSearch() {
-    RouteModel::Node *current_node = nullptr;
+    RouteModel::Node *current_node_p = nullptr;
+    // point the current_node to the start_node.
+    current_node_p = start_node; 
+    current_node_p->visited = true;
+    // ! my mistake: don't forget to initialize the open_list with the start_node
+    open_list.push_back(start_node);
 
-    // TODO: Implement your solution here.
+    // - Use the AddNeighbors method to add all of the neighbors of the current node to the open_list.
+    while(open_list.size()>0)
+    {
+        // - Use the NextNode() method to sort the open_list and return the next node.
+        auto next_p = NextNode(); 
+        // - When the search has reached the end_node, 
+        if (current_node_p == end_node)
+        {
+            // - use the ConstructFinalPath method to return the final path that was found.
+            // - Store the final path in the m_Model.path attribute before the method exits. This path will then be displayed on the map tile.
+            m_Model.path = ConstructFinalPath(end_node);
+            return;
+        }  
 
+        // update the open_list. 
+        AddNeighbors(next_p);
+        // iterate to the next_node
+        current_node_p = next_p;
+    } 
 }
