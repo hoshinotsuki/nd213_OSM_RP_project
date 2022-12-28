@@ -26,6 +26,7 @@ class RoutePlanner {
     RouteModel::Node *start_node;
     RouteModel::Node *end_node;
 
+    // store the complete distance of the path that you find from starting point to end point.
     float distance = 0.0f;
     RouteModel &m_Model;
 };
