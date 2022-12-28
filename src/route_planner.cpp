@@ -37,75 +37,72 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
     (*current_node).FindNeighbors();
     //  For each node in current_node.neighbors.
     for (RouteModel::Node* node : current_node->neighbors)  
-    {
-        if (!(*node).visited){
-            // set the parent to the current_node.
-            (*node).parent = current_node;
-            // set the h_value to the distance between the neighbor_node and the end_node.
-            (*node).h_value = CalculateHValue(node);
-            // set the g_value: current_g + the distance between the current_node and the neighbor_node.!!
-            (*node).g_value = current_node->g_value + current_node->distance(*node);
-            //populate: add the neighbors of the neighbor_node to the open_list(neighbors) of the neighbor_node
-            (*node).FindNeighbors();
+    {   
+        // set the parent to the current_node.
+        (*node).parent = current_node;
+        // set the h_value to the distance between the neighbor_node and the end_node.
+        (*node).h_value = CalculateHValue(node);
+        // set the g_value: current_g + the distance between the current_node and the neighbor_node.!!
+        (*node).g_value = current_node->g_value + current_node->distance(*node); 
+        if (!(*node).visited)
+        {
+            // adding all unvisited neighbors to the open list.
+            open_list.push_back(node); 
             // set the node's visited attribute to true.
             (*node).visited = true;
         }
     } 
 }
-
-
-
-//Compare the F values of two nodes in the open_list[vector<node*> neighbors]
-bool Compare(const RouteModel::Node* a, const RouteModel::Node* b) {
-  auto f1 = a->g_value + a->h_value;
-  auto f2 = b->g_value + b->h_value;
-  // Sort the open_list in descending order. 
-  return f1 > f2; 
-}
-
-
-
-// only pointer can be iterative : pass by open_list as a pointer to [vector<node*>neighbors] 
-void CellSort(std::vector<RouteModel::Node*> * open_list) {
-    // use pointer to iterate [vector<node*>neighbors].
-  std::sort(open_list->begin(), open_list->end(), Compare);
-}
-
+ 
 
 // TODO 5: Complete the NextNode method to sort the open list and return the next node.
-RouteModel::Node *RoutePlanner::NextNode(RouteModel::Node *current_node) {
-    // store the pointer to the neighbors of the nurrent_node in open_list.
-    auto open_list = &(*current_node).neighbors;
-
-    // Sort the open_list according to the sum of the h value and g value.
-    CellSort(open_list);
+    //Compare the F values of two nodes in the open_list[vector<node*> neighbors]
+    bool Compare(const RouteModel::Node* p1, const RouteModel::Node* p2) { 
+    // - Sort the open_list in descending order. 
+    return (p1->g_value + p1->h_value) > (p2->g_value + p2->h_value); 
+    } 
     
-    // Create a pointer to the node in the list with the lowest sum.
-    auto node_p = (*open_list).back();
+    // only pointer can be iterative : pass by open_list as a pointer to [vector<node*>neighbors] 
+    void CellSort(std::vector<RouteModel::Node*> * open_list_p) {
+        // use pointer to iterate [vector<node*>neighbors].
+    std::sort(open_list_p->begin(), open_list_p->end(), Compare);
+    }
 
-    // Remove that node from the open_list.
-    (*open_list).pop_back();
-
-    // Return the pointer.
+RouteModel::Node *RoutePlanner::NextNode() { 
+    // Sort the open_list according to the sum of the h value and g value.
+    CellSort(&open_list);
+    // - Create a pointer to the node in the list with the lowest sum.
+    auto node_p = open_list.back();
+    // - Remove that node from the open_list.
+    open_list.pop_back();
+    // - Return the pointer.
     return node_p;
 }
 
 
 // TODO 6: Complete the ConstructFinalPath method to return the final path found from your A* search.
-// Tips:
-// - This method should take the current (final) node as an argument and iteratively follow the 
-//   chain of parents of nodes until the starting node is found.
-// - For each node in the chain, add the distance from the node to its parent to the distance variable.
-// - The returned vector should be in the correct order: the start node should be the first element
-//   of the vector, the end node should be the last element.
-
 std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node *current_node) {
     // Create path_found vector
     distance = 0.0f;
     std::vector<RouteModel::Node> path_found;
-
-    // TODO: Implement your solution here.
-
+    // This method should take the current (final) node as an argument 
+    // iteratively follow the chain of parents of nodes until the starting node is found.
+    while(current_node && current_node!=start_node)
+    {
+        // add node into the path
+        path_found.push_back(*current_node); 
+        // add the distance from the node to its parent to the distance variable.
+        distance += (*current_node).parent->distance(*current_node); 
+        // iterate to the next node
+        current_node =(*current_node).parent;
+    }
+    //put the start_node into the path
+    path_found.push_back(*start_node);
+    
+    // The returned vector should be in the correct order: the start node should be the first element of the vector, the end node should be the last element.
+    // reverse a vector use std::reverse.
+    std::reverse(path_found.begin(), path_found.end());
+    
     distance *= m_Model.MetricScale(); // Multiply the distance by the scale of the map to get meters.
     return path_found;
 
