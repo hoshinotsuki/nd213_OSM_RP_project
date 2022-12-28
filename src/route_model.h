@@ -26,7 +26,7 @@ class RouteModel : public Model {
         float g_value = 0.0;
         // a boolean which tells whether the node has been visited
         bool visited = false;
-        // a vector of node pointers : neighbors, which will be populated with all of the neighbors of the node
+        // open_list: neighbors, which will be populated with all of the neighbors of the node
         std::vector<Node *> neighbors;
         // populate the neighbors 
         void FindNeighbors();

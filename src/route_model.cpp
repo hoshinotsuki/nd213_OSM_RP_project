@@ -68,7 +68,7 @@ RouteModel::Node *RouteModel::Node::FindNeighbor(std::vector<int> node_indices) 
     return closest_node;
 }
 
-// 
+// populate current_node.neighbors vector with all the neighbors.
 void RouteModel::Node::FindNeighbors() {
     // node_to_road[this->index]: get the vector of the [roads] which the node belongs to, using the [current_node_index] to search the hashmap to. 
     for (auto & road : parent_model->node_to_road[this->index]) {
