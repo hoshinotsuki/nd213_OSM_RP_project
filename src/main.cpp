@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <io2d.h>
+#include <limits.h>
 #include "route_model.h"
 #include "render.h"
 #include "route_planner.h"
@@ -12,49 +13,61 @@ using namespace std::experimental;
 
 static std::optional<std::vector<std::byte>> ReadFile(const std::string &path)
 {   
-    /* binary : we'll be reading the data as the binary data,
-    and not converting to any other data type like string.
-    ate: at the end, i.e. it will immediately seek to the end of the InputStream */
     std::ifstream is{path, std::ios::binary | std::ios::ate};
-    
     if( !is )
         return std::nullopt;
     
-    // tellg: determine the size of the input stream 
     auto size = is.tellg();
-    // initialize the vector of bytes with size 
     std::vector<std::byte> contents(size);    
     
-    // seek back to the beginning of the input stream
     is.seekg(0);
-    // read all of the input stream into the contents vector
     is.read((char*)contents.data(), size);
 
     if( contents.empty() )
         return std::nullopt;
-    /* 
-        when we're done, we will return the contents vector 
-        using the standard move of contents.
-        move: allows you to transfer the contents of this vector to another variable
-        without using pointers or references.
-    */
-    return std::move(contents); 
+    return std::move(contents);
 }
+
+
+	float start_x;
+  	float start_y;
+  	float end_x;
+  	float end_y;
+
+  	
+	// pass by reference 
+	void user_input(float& val, std::string prompt)
+    { 
+         std::cout<< prompt; 
+      	// set width: make sure input just take one item, separated by space from stream.
+      	 std::cin >> std::setw(1)>> val;
+      
+      	// error check
+         while(!std::cin.good() || val >100 || val <0)
+         {
+           // clear stream
+           std::cout<<"Error: please enter a float [0,100]!\n";
+           std::cin.clear(); // clear any characters
+           std::cin.ignore(INT_MAX,'\n');// cin keeps newline characters in the stream like trash, which ruins next getline that comes in
+           
+           // get input again
+           std::cout<< prompt; 
+      	   std::cin  >> std::setw(1)>> val;
+         }  
+    }
+ 
 
 int main(int argc, const char **argv)
 {    
     std::string osm_data_file = "";
     if( argc > 1 ) {
         for( int i = 1; i < argc; ++i )
-        // parse command-line arguments.
-        // "-f": allows you to specify the osm datafile that you want to use
             if( std::string_view{argv[i]} == "-f" && ++i < argc )
                 osm_data_file = argv[i];
     }
     else {
         std::cout << "To specify a map file use the following format: " << std::endl;
         std::cout << "Usage: [executable] [-f filename.osm]" << std::endl;
-        // default osm datafile
         osm_data_file = "../map.osm";
     }
     
@@ -62,25 +75,28 @@ int main(int argc, const char **argv)
  
     if( osm_data.empty() && !osm_data_file.empty() ) {
         std::cout << "Reading OpenStreetMap data from the following file: " <<  osm_data_file << std::endl;
-        // ReadFile : read contents of the osm datafile into the vector osmdata
         auto data = ReadFile(osm_data_file);
         if( !data )
             std::cout << "Failed to read." << std::endl;
         else
             osm_data = std::move(*data);
     }
-    
+    //Complete this TODO to satisfy Project Rubric Criterias of User Input
+  
     // TODO 1: Declare floats `start_x`, `start_y`, `end_x`, and `end_y` and get
     // user input for these values using std::cin. Pass the user input to the
     // RoutePlanner object below in place of 10, 10, 90, 90.
 
+  	user_input(start_x, "input start_x: "); 
+    user_input(start_y, "input start_y: "); 
+    user_input(end_x, "input end_x: ");  
+    user_input(end_y, "input end_y: "); 
+  
     // Build Model.
     RouteModel model{osm_data};
 
     // Create RoutePlanner object and perform A* search.
-    // {model, x1, y1, x2, y2}  x1, y1 -> starting
-    RoutePlanner route_planner{model, 10, 10, 90, 90};
-    // records the results in the route planner object
+    RoutePlanner route_planner{model, start_x, start_y, end_x, end_y}; 
     route_planner.AStarSearch();
 
     std::cout << "Distance: " << route_planner.GetDistance() << " meters. \n";
@@ -88,7 +104,6 @@ int main(int argc, const char **argv)
     // Render results of search.
     Render render{model};
 
-    // IO2D to display the results
     auto display = io2d::output_surface{400, 400, io2d::format::argb32, io2d::scaling::none, io2d::refresh_style::fixed, 30};
     display.size_change_callback([](io2d::output_surface& surface){
         surface.dimensions(surface.display_dimensions());
