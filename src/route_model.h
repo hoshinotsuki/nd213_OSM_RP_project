@@ -11,25 +11,24 @@
 class RouteModel : public Model {
 
   public:
-    /* subclass(Node)inherits from the model struct(Node) .
-  model struct node provided x and y coordinates. */
-    class Node : public Model::Node {
-      public:
-    /* 
-    we extend that stuct by adding :
-    1. a pointer to the parent of the Node
-    2. the h_value of the node
-    3. the g_value of the node
-    4. a boolean which tells whether the node has been visited
-    5. a vector of node pointers : neighbors, which will be populated with all of the neighbors of the node
+    /*  subclass(Node) inherits from the model struct(Node) .
+        model struct node provided x and y coordinates. 
+        we extend the ModelNode class.
     */
+    class Node : public Model::Node {
+      public: 
+        
+        // a pointer to the parent of the Node
         Node * parent = nullptr;
+        // the h_value of the node
         float h_value = std::numeric_limits<float>::max();
+        // the g_value of the node
         float g_value = 0.0;
+        // a boolean which tells whether the node has been visited
         bool visited = false;
+        // a vector of node pointers : neighbors, which will be populated with all of the neighbors of the node
         std::vector<Node *> neighbors;
-
-      // populate the neighbors 
+        // populate the neighbors 
         void FindNeighbors();
         // return the ou Distance between the current node and the other node 
         float distance(Node other) const {
@@ -48,12 +47,14 @@ class RouteModel : public Model {
 
       private:
         int index;
+        // used in Node::FindNeighbors();
         Node * FindNeighbor(std::vector<int> node_indices);
         RouteModel * parent_model = nullptr;
     };
 
     // xml : OSM data
     RouteModel(const std::vector<std::byte> &xml);
+    // input (x,y), return the closest node
     Node &FindClosestNode(float x, float y);
     // getter function, which returns a vector of nodes.
     auto &SNodes() { return m_Nodes; }
